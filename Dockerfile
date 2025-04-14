@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build:dev
+RUN npm run build
 
 # Stage 2: Create a lightweight production image
 FROM nginx:alpine
