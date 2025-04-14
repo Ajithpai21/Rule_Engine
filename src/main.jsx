@@ -67,7 +67,7 @@ const Layout = () => {
           }`}
         />
       </div>
-      <div className="flex-1 overflow-auto relative">
+      <div className="flex-1 overflow-auto relative [&::-webkit-scrollbar]:hidden">
         <Outlet />
       </div>
 
