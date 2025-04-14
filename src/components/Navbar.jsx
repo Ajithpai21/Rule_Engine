@@ -110,9 +110,7 @@ const Navbar = () => {
     <>
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-      <div
-        className={`flex px-6 py-4 justify-between w-full z-10 ${navbarClass}`}
-      >
+      <div className={`flex px-6 py-4 justify-between w-full ${navbarClass}`}>
         <div className="box flex gap-5 items-center">
           <button onClick={toggleSidebar} className="text-xl cursor-pointer">
             <Menu size={24} />

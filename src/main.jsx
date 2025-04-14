@@ -55,7 +55,7 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex flex-col h-screen overflow-hidden transition-colors duration-300 ${
+      className={`flex flex-col h-screen transition-colors duration-300 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
