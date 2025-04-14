@@ -242,7 +242,7 @@ const TableComp = ({
       >
         <div
           className="overflow-y-auto [&::-webkit-scrollbar]:hidden"
-          style={{ maxHeight: tableSize }}
+          style={{ maxHeight: tableSize || "calc(100vh - 220px)" }}
         >
           <table
             className={`w-full text-left divide-y border-collapse border ${borderColor} ${bgColor}`}
