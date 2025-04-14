@@ -2,16 +2,22 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
-import { webcrypto as crypto } from 'crypto';
-
-// Polyfill for environments that need crypto.getRandomValues
-globalThis.crypto ??= crypto;
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    nodePolyfills({
+      crypto: true,
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(process.cwd(), 'src'),
     },
+  },
+  define: {
+    'process.env': {},
   },
 });
