@@ -270,52 +270,56 @@ const Rule = () => {
   const columns = ["name", "type", "created_at", "updated_at"];
 
   return (
-    <div
-      className={`flex flex-col h-full px-6 rounded-lg shadow-lg ${
-        theme === "dark" ? "bg-gray-900" : "bg-gray-100"
-      }`}
-    >
-      <div
-        className={`p-4 rounded-lg shadow ${
-          theme === "dark" ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <TableComp
-          key={"rule"}
-          rows={rows}
-          isLoading={isLoading}
-          page={page}
-          limit={limit}
-          totalPages={totalPages}
-          handleLimitChange={handleLimitChange}
-          setPage={setPage}
-          columns={columns}
-          actionVisbility={true}
-          editVisbility={true}
-          viewVisbility={true}
-          tableSize={"500px"}
-          handleDelete={handleDelete}
-          onCreate={handleCreate}
-          createView={true}
-          onView={setViewOn}
-          onEdit={handleEdit}
-          isCreateDataSource={false}
-          isRulePage={true}
-          selectedType={selectedType}
-          setSelectedType={setSelectedType}
-          search={search}
-          setSearch={setSearch}
-          isAuditPage={false}
-          typeOptions={""}
-          actionOptions={""}
-          statusOptions={""}
-          selectedTypeOption={""}
-          setSelectedTypeOption={""}
-          selectedAction={""}
-          setSelectedAction={""}
-          selectedStatus={""}
-          setSelectedStatus={""}
-        />
+    <div className="w-full h-full p-4 overflow-y-auto">
+      <div className="flex flex-col w-full h-full">
+        <div className="flex-none">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              onClick={handleCreate}
+            >
+              Create Rule
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <TableComp
+            key={"rule"}
+            rows={rows}
+            isLoading={isLoading}
+            page={page}
+            limit={limit}
+            totalPages={totalPages}
+            handleLimitChange={handleLimitChange}
+            setPage={setPage}
+            columns={columns}
+            actionVisbility={true}
+            editVisbility={true}
+            viewVisbility={true}
+            tableSize={"500px"}
+            handleDelete={handleDelete}
+            onCreate={handleCreate}
+            createView={true}
+            onView={setViewOn}
+            onEdit={handleEdit}
+            isCreateDataSource={false}
+            isRulePage={true}
+            selectedType={selectedType}
+            setSelectedType={setSelectedType}
+            search={search}
+            setSearch={setSearch}
+            isAuditPage={false}
+            typeOptions={""}
+            actionOptions={""}
+            statusOptions={""}
+            selectedTypeOption={""}
+            setSelectedTypeOption={""}
+            selectedAction={""}
+            setSelectedAction={""}
+            selectedStatus={""}
+            setSelectedStatus={""}
+          />
+        </div>
       </div>
       {PageIsOpen && (
         <CreateRulePage
@@ -325,23 +329,23 @@ const Rule = () => {
           handeIsCreate={handeIsCreate}
         />
       )}
-      {isCreate && <CreateSimpleRule setOnClose={handeIsCreate} />}
-      {editSimpleRule && <EditSimpleRule setOnClose={handleCloseEdit} />}
-      {viewSimpleRule && <ViewSimpleRule setOnClose={setViewSimpleRule} />}
+      {isCreate && <CreateSimpleRule onClose={handeIsCreate} />}
+      {editSimpleRule && <EditSimpleRule onClose={handleCloseEdit} />}
+      {viewSimpleRule && <ViewSimpleRule onClose={setViewSimpleRule} />}
 
       {isCreateDescisionTable && (
-        <DescisionTable setOnClose={setIsCreateDescisionTable} />
+        <DescisionTable onClose={setIsCreateDescisionTable} />
       )}
       {editDecisionTable && (
-        <EditDecisionTable setOnClose={setEditDecisionTable} />
+        <EditDecisionTable onClose={setEditDecisionTable} />
       )}
       {viewDecisionTable && (
-        <ViewDecisionTable setOnClose={setViewDecisionTable} />
+        <ViewDecisionTable onClose={setViewDecisionTable} />
       )}
 
-      {isCreateRuleSet && <CreateRuleSet setOnClose={setIsCreateRuleSet} />}
-      {editRuleSet && <EditRuleSet setOnClose={setEditRuleSet} />}
-      {viewRuleSet && <ViewRuleSet setOnClose={setViewRuleSet} />}
+      {isCreateRuleSet && <CreateRuleSet onClose={setIsCreateRuleSet} />}
+      {editRuleSet && <EditRuleSet onClose={setEditRuleSet} />}
+      {viewRuleSet && <ViewRuleSet onClose={setViewRuleSet} />}
     </div>
   );
 };

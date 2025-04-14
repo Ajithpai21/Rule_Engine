@@ -55,17 +55,19 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen transition-colors duration-300 ${
+      className={`flex flex-col h-screen overflow-hidden transition-colors duration-300 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
-      <Navbar />
-      <hr
-        className={`border ${
-          theme === "dark" ? "border-white" : "border-black"
-        }`}
-      />
-      <div className="flex-1">
+      <div className="flex-shrink-0">
+        <Navbar />
+        <hr
+          className={`border ${
+            theme === "dark" ? "border-white" : "border-black"
+          }`}
+        />
+      </div>
+      <div className="flex-1 overflow-auto">
         <Outlet />
       </div>
 

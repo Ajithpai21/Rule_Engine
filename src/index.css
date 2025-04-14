@@ -117,5 +117,41 @@
   }
   body {
     @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
   }
+  
+  /* Responsive styles for scrollable content */
+  @media (max-height: 768px) {
+    .overflow-auto {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+/* Custom responsive styles */
+@media screen and (max-width: 640px) {
+  .flex-shrink-0 .flex {
+    flex-direction: column;
+  }
+}
+
+/* Modal styles to ensure they stay within viewport */
+[role="dialog"] {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for table overflow */
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Ensure content areas don't overflow */
+.flex-1.overflow-auto {
+  max-height: calc(100vh - 80px); /* Adjust based on navbar height */
 }
