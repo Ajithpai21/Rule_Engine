@@ -298,9 +298,44 @@ const DynamicValueInput = ({
     const inputValue = e.target.value;
     // Don't convert to number yet to allow partial typing like "-" or "."
     const safeValue = value === undefined || value === null ? ["", ""] : value;
-    const newValue = Array.isArray(safeValue) ? [...safeValue] : ["", ""];
-    newValue[index] = inputValue;
-    onChange(newValue);
+    // Ensure safeValue is always an array for numeric between
+    const currentArray = Array.isArray(safeValue) ? [...safeValue] : ["", ""];
+    // Ensure array has at least two elements
+    while (currentArray.length < 2) {
+      currentArray.push("");
+    }
+
+    currentArray[index] = inputValue; // Store string value onChange
+    onChange(currentArray);
+  };
+
+  // Convert 'between' numeric input to number on blur
+  const handleBetweenNumericBlur = (index, event) => {
+    const inputValue = event.target.value;
+    const currentArray = Array.isArray(value) ? [...value] : ["", ""];
+    while (currentArray.length < 2) {
+      currentArray.push("");
+    }
+
+    if (inputValue.trim() === "") {
+      // If input is cleared, store empty string or null? Let's use "" for consistency.
+      if (currentArray[index] !== "") {
+        const newValue = [...currentArray];
+        newValue[index] = "";
+        onChange(newValue);
+      }
+      return;
+    }
+
+    const num = Number(inputValue);
+    // Only update if it's a valid number AND the stored value is different
+    // to prevent unnecessary updates or converting already correct numbers.
+    if (!isNaN(num) && currentArray[index] !== num) {
+      const newValue = [...currentArray];
+      newValue[index] = num; // Store the number
+      onChange(newValue);
+    }
+    // If it's not a valid number, do nothing on blur, the string remains from onChange.
   };
 
   // Handle date or datetime values for 'between' operator
@@ -518,6 +553,7 @@ const DynamicValueInput = ({
                     : ""
                 }
                 onChange={(e) => handleBetweenNumericChange(0, e)}
+                onBlur={(e) => handleBetweenNumericBlur(0, e)}
                 className={`w-full ${themeStyles.inputStyles}`}
                 placeholder="Min value"
               />
@@ -532,6 +568,7 @@ const DynamicValueInput = ({
                     : ""
                 }
                 onChange={(e) => handleBetweenNumericChange(1, e)}
+                onBlur={(e) => handleBetweenNumericBlur(1, e)}
                 className={`w-full ${themeStyles.inputStyles}`}
                 placeholder="Max value"
               />

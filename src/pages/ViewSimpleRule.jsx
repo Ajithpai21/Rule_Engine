@@ -174,7 +174,18 @@ const ReadOnlyDataSource = ({ dataSources, theme }) => {
   // Check if dataSources is an array or a single object
   const dataSourcesArray = Array.isArray(dataSources)
     ? dataSources
-    : [dataSources];
+    : dataSources && typeof dataSources === "object"
+    ? [dataSources]
+    : [];
+
+  // Improved check: Ensure there's at least one valid source object
+  const hasValidDataSources =
+    dataSourcesArray &&
+    dataSourcesArray.length > 0 &&
+    dataSourcesArray.some(
+      (source) =>
+        source && (source.datasource_name || source.name || source.platform)
+    );
 
   return (
     <div
@@ -182,9 +193,7 @@ const ReadOnlyDataSource = ({ dataSources, theme }) => {
         theme === "dark" ? "bg-gray-800" : "bg-white"
       }`}
     >
-      {dataSourcesArray &&
-      dataSourcesArray.length > 0 &&
-      dataSourcesArray[0] ? (
+      {hasValidDataSources ? ( // Use the improved check here
         <div
           className="flex-1 overflow-y-auto custom-scrollbar"
           style={{ height: "calc(100% - 40px)" }}
@@ -584,6 +593,199 @@ const ViewSimpleRule = ({ setOnClose }) => {
     setIsVisible(true);
   }, []);
 
+  // Filter actions based on the 'value' property
+  const thenActions = useMemo(
+    () => actions.filter((action) => action.value === true),
+    [actions]
+  );
+  const elseActions = useMemo(
+    () => actions.filter((action) => action.value !== true),
+    [actions]
+  );
+
+  // Render a set of actions (Then or Else)
+  const renderActionSet = (actionList, type) => {
+    const title = type === "then" ? "Then Actions" : "Else Actions";
+    const titleColor = type === "then" ? "text-green-500" : "text-yellow-500";
+    const iconColor = type === "then" ? "text-green-400" : "text-yellow-400";
+    const iconBg = type === "then" ? "bg-green-900" : "bg-yellow-900";
+    const iconText = type === "then" ? "text-green-200" : "text-yellow-200";
+
+    return (
+      <div
+        className={`action-set p-4 border rounded-md shadow-sm flex flex-col ${
+          theme === "dark"
+            ? "bg-gray-800 border-gray-700"
+            : "bg-white border-gray-300"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-3">
+          <div
+            className={`text-lg font-semibold flex items-center ${titleColor}`}
+          >
+            {/* Optional: Add an icon here if desired */}
+            {title}
+          </div>
+          {actionList.length > 0 && (
+            <div
+              className={
+                theme === "dark"
+                  ? "text-sm text-gray-400"
+                  : "text-sm text-gray-500"
+              }
+            >
+              {actionList.length} action{actionList.length !== 1 ? "s" : ""}
+            </div>
+          )}
+        </div>
+        {actionList && actionList.length > 0 ? (
+          <div
+            className={`flex-1 overflow-y-auto custom-scrollbar border rounded-md shadow-inner ${
+              // Added flex-1
+              theme === "dark"
+                ? "border-gray-700 bg-gray-900"
+                : "border-gray-200 bg-gray-50"
+            }`}
+            style={{ maxHeight: "400px" }} // Max height for scroll
+          >
+            {actionList.map((action, index) => (
+              <div
+                key={action.id || index} // Prefer a unique action id if available
+                className={`p-4 ${
+                  index !== actionList.length - 1
+                    ? theme === "dark"
+                      ? "border-b border-gray-700"
+                      : "border-b border-gray-200"
+                    : ""
+                } ${
+                  theme === "dark" ? "hover:bg-gray-750" : "hover:bg-gray-100"
+                } transition-colors`}
+              >
+                <div className="flex items-center mb-3">
+                  {/* Numbering based on the filtered list index */}
+                  <div
+                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold mr-2 ${
+                      theme === "dark"
+                        ? `${iconBg} ${iconText}`
+                        : `${
+                            type === "then"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  <span className={`font-semibold text-md ${iconColor}`}>
+                    {action.name || action.action_name || "Action"}
+                  </span>
+                </div>
+
+                <div
+                  className={`p-3 rounded-lg ${
+                    theme === "dark" ? "bg-gray-700" : "bg-gray-600/10"
+                  }`}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                    <div className="flex items-start text-sm">
+                      <span
+                        className={`flex-shrink-0 font-medium mr-1.5 ${labelColor}`}
+                      >
+                        Platform:
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-xs ${
+                          theme === "dark"
+                            ? `${iconBg} ${iconText}`
+                            : `${
+                                type === "then"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`
+                        }`}
+                      >
+                        {action.platform || "N/A"}
+                      </span>
+                    </div>
+                    {/* Display Integration ID if available */}
+                    {action.integration_id && (
+                      <div className="flex items-start text-sm">
+                        <span
+                          className={`flex-shrink-0 font-medium mr-1.5 ${labelColor}`}
+                        >
+                          Integration ID:
+                        </span>
+                        <span className={textColor}>
+                          {action.integration_id}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {action.action_query && (
+                    <div className="mt-2">
+                      <div className={`text-sm font-medium mb-1 ${labelColor}`}>
+                        Action Query:
+                      </div>
+                      <div
+                        className={`p-2 rounded-md border overflow-x-auto custom-scrollbar ${
+                          theme === "dark"
+                            ? "bg-gray-900 border-gray-600"
+                            : "bg-white border-gray-300"
+                        }`}
+                      >
+                        <pre
+                          className={`text-xs whitespace-pre-wrap ${textColor}`}
+                        >
+                          {typeof action.action_query === "object"
+                            ? JSON.stringify(action.action_query, null, 2)
+                            : action.action_query}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`py-8 text-center rounded-md border flex-1 flex flex-col justify-center items-center ${
+              theme === "dark"
+                ? "bg-gray-900 border-gray-700"
+                : "bg-gray-50 border-gray-200"
+            }`}
+          >
+            {/* Simplified No Actions message */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`h-10 w-10 mb-2 ${
+                theme === "dark" ? "text-gray-600" : "text-gray-400"
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <p
+              className={`font-medium text-sm ${
+                theme === "dark" ? "text-gray-500" : "text-gray-500"
+              }`}
+            >
+              No {type} actions defined
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Render results in read-only mode
   const renderResults = (results, type) => {
     const headerBg = theme === "dark" ? "bg-gray-700" : "bg-gray-100";
@@ -594,7 +796,7 @@ const ViewSimpleRule = ({ setOnClose }) => {
       <div
         className={`border rounded-md ${
           theme === "dark" ? "border-gray-700" : "border-gray-300"
-        } shadow-sm overflow-hidden`}
+        } shadow-sm overflow-hidden flex flex-col`}
       >
         <div className={`p-3 ${headerBg} flex items-center`}>
           <div className={`font-medium ${textColor}`}>
@@ -603,7 +805,11 @@ const ViewSimpleRule = ({ setOnClose }) => {
           </div>
         </div>
 
-        <div className={`p-4 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+        <div
+          className={`p-4 flex-1 overflow-y-auto custom-scrollbar max-h-80 ${
+            theme === "dark" ? "bg-gray-800" : "bg-white"
+          }`}
+        >
           {results && results.length > 0 ? (
             <div className="space-y-3">
               {results.map((item, index) => (
@@ -655,198 +861,6 @@ const ViewSimpleRule = ({ setOnClose }) => {
             </div>
           )}
         </div>
-      </div>
-    );
-  };
-
-  // Render actions in read-only mode
-  const renderActions = () => {
-    return (
-      <div
-        className={`action-section p-6 rounded-md shadow ${
-          theme === "dark" ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="btnsclass flex justify-between items-center mb-4">
-          <div
-            className={`label text-xl font-bold flex items-center ${
-              theme === "dark" ? "text-blue-400" : "text-blue-700"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            Actions
-          </div>
-          {actions.length > 0 && (
-            <div
-              className={
-                theme === "dark"
-                  ? "text-sm text-gray-400"
-                  : "text-sm text-gray-500"
-              }
-            >
-              {actions.length} action{actions.length !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-        {actions && actions.length > 0 ? (
-          <div
-            className={`overflow-y-auto custom-scrollbar border rounded-md shadow-inner ${
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
-            }`}
-            style={{ maxHeight: "400px", display: "block" }}
-          >
-            {actions.map((action, index) => (
-              <div
-                key={index}
-                className={`p-5 ${
-                  index !== actions.length - 1
-                    ? theme === "dark"
-                      ? "border-b border-gray-700"
-                      : "border-b border-gray-200"
-                    : ""
-                } ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"} ${
-                  theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50"
-                } transition-colors`}
-              >
-                <div className="flex items-center mb-3">
-                  <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-semibold mr-3 ${
-                      theme === "dark"
-                        ? "bg-blue-900 text-blue-200"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
-                  <span
-                    className={`font-bold text-lg ${
-                      theme === "dark" ? "text-blue-400" : "text-blue-700"
-                    }`}
-                  >
-                    {action.name || action.action_name || "Action"}
-                  </span>
-                </div>
-
-                <div
-                  className={`p-4 rounded-lg ${
-                    theme === "dark" ? "bg-gray-700" : "bg-gray-50"
-                  }`}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                    <div className="flex items-start">
-                      <span
-                        className={`flex-shrink-0 font-medium mr-2 ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        Platform:
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded ${
-                          theme === "dark"
-                            ? "bg-blue-900 text-blue-200"
-                            : "bg-blue-50 text-blue-800"
-                        }`}
-                      >
-                        {action.platform || "Not specified"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {action.action_query && (
-                    <div className="mt-3">
-                      <div className="flex items-center mb-2">
-                        <span
-                          className={`font-medium mr-2 ${
-                            theme === "dark" ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          Action Query:
-                        </span>
-                        <div
-                          className={`flex-grow h-px ${
-                            theme === "dark" ? "bg-gray-600" : "bg-gray-200"
-                          }`}
-                        ></div>
-                      </div>
-                      <div
-                        className={`p-3 rounded-md border overflow-x-auto custom-scrollbar ${
-                          theme === "dark"
-                            ? "bg-gray-800 border-gray-600"
-                            : "bg-gray-100 border-gray-300"
-                        }`}
-                      >
-                        <pre
-                          className={`text-sm whitespace-pre-wrap ${
-                            theme === "dark" ? "text-gray-300" : "text-gray-800"
-                          }`}
-                        >
-                          {typeof action.action_query === "object"
-                            ? JSON.stringify(action.action_query, null, 2)
-                            : action.action_query}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div
-            className={`py-10 text-center rounded-md border ${
-              theme === "dark"
-                ? "bg-gray-700 border-gray-600"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className={`h-12 w-12 mx-auto mb-3 ${
-                theme === "dark" ? "text-gray-500" : "text-gray-400"
-              }`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 110 20 10 10 0 010-20z"
-              />
-            </svg>
-            <p
-              className={`font-medium ${
-                theme === "dark" ? "text-gray-300" : "text-gray-500"
-              }`}
-            >
-              No actions defined for this rule
-            </p>
-            <p
-              className={
-                theme === "dark"
-                  ? "text-gray-400 text-sm mt-1"
-                  : "text-gray-400 text-sm mt-1"
-              }
-            >
-              Actions will appear here when they are added to the rule
-            </p>
-          </div>
-        )}
       </div>
     );
   };
@@ -1368,20 +1382,45 @@ const ViewSimpleRule = ({ setOnClose }) => {
               {/* Results */}
               <div>
                 <h3 className={`text-lg font-medium ${textColor} mb-2`}>
-                  Results
+                  Rule Outcome
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderResults(thenResult, "then")}
-                  {renderResults(elseResult, "else")}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Then Results Section */}
+                  <div>
+                    <h4
+                      className={`text-md font-semibold mb-2 ${
+                        theme === "dark" ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      Then Results
+                    </h4>
+                    {renderResults(thenResult, "then")}
+                  </div>
+                  {/* Else Results Section */}
+                  <div>
+                    <h4
+                      className={`text-md font-semibold mb-2 ${
+                        theme === "dark" ? "text-yellow-400" : "text-yellow-600"
+                      }`}
+                    >
+                      Else Results
+                    </h4>
+                    {renderResults(elseResult, "else")}
+                  </div>
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Actions - Separated into Then/Else */}
               <div>
                 <h3 className={`text-lg font-medium ${textColor} mb-2`}>
                   Actions
                 </h3>
-                {renderActions()}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Then Actions Section */}
+                  {renderActionSet(thenActions, "then")}
+                  {/* Else Actions Section */}
+                  {renderActionSet(elseActions, "else")}
+                </div>
               </div>
             </div>
           )}
