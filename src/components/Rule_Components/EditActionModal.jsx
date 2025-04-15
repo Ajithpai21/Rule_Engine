@@ -323,6 +323,7 @@ const EditActionModal = ({
                             : "hover:bg-gray-300"
                         }`}
                         onClick={() => toggleTable(item)}
+                        title={item}
                       >
                         <span>{item}</span>
                         {openTables[item] ? (

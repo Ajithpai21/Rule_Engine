@@ -445,6 +445,7 @@ const CreateActionModal = ({
                             : "hover:bg-gray-300"
                         }`}
                         onClick={() => toggleTable(item)}
+                        title={item}
                       >
                         <span>{item}</span>
                         {openTables[item] ? (
@@ -467,6 +468,7 @@ const CreateActionModal = ({
                                   ? "hover:bg-gray-500"
                                   : "hover:bg-blue-500"
                               }`}
+                              title={detail}
                             >
                               <Folder size={13} />
                               <span className="text-sm">{detail}</span>
