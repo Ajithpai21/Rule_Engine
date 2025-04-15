@@ -630,14 +630,19 @@ const ResultButton = ({
 
         {isAttributeSelectorOpen && (
           <div
-            className={`fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50`}
+            className={`fixed inset-0 z-70 flex items-center justify-center`}
+            style={{ backgroundColor: "rgba(128, 128, 128, 0.5)" }}
             ref={attributeSelectorRef}
           >
             <div
               className={`w-[90%] sm:w-[80%] md:w-[50%] lg:w-[40%] max-w-lg p-6 rounded-lg shadow-lg ${getThemeClasses.background}`}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
+                <h3
+                  className={`text-lg font-semibold ${
+                    theme === "dark" ? "text-white" : "text-black"
+                  }`}
+                >
                   Select Attribute Data Source
                 </h3>
                 <button
@@ -684,7 +689,7 @@ const ResultButton = ({
                           }
                           className={`flex justify-between items-center w-full px-4 py-2 font-semibold text-left ${getThemeClasses.button.dropdownItem}`}
                         >
-                          Global Attributes
+                          <span className="font-bold">Global Attributes</span>
                           {expandedAttributeGroups["Global Attributes"] ? (
                             <ChevronUp size={16} />
                           ) : (
@@ -717,7 +722,26 @@ const ResultButton = ({
                                   }
                                   className={`block w-full text-left px-4 py-2 cursor-pointer text-sm ${getThemeClasses.button.dropdownItem}`}
                                 >
-                                  {attr.attribute} ({attr.data_type})
+                                  <div className="flex items-center gap-4">
+                                    <span
+                                      className={`text-lg ${
+                                        theme === "dark"
+                                          ? "text-blue-300"
+                                          : "text-blue-600"
+                                      }`}
+                                    >
+                                      {attr.attribute}
+                                    </span>
+                                    <span
+                                      className={`text-gray-500 text-xs ${
+                                        theme === "dark"
+                                          ? "text-gray-400"
+                                          : "text-gray-600"
+                                      }`}
+                                    >
+                                      {attr.data_type}
+                                    </span>
+                                  </div>
                                 </button>
                               ))}
 
@@ -749,7 +773,7 @@ const ResultButton = ({
                           }
                           className={`flex justify-between items-center w-full px-4 py-2 font-semibold text-left ${getThemeClasses.button.dropdownItem}`}
                         >
-                          Input Attributes
+                          <span className="font-bold">Input Attributes</span>
                           {expandedAttributeGroups["Input Attributes"] ? (
                             <ChevronUp size={16} />
                           ) : (
@@ -782,7 +806,26 @@ const ResultButton = ({
                                   }
                                   className={`block w-full text-left px-4 py-2 cursor-pointer text-sm ${getThemeClasses.button.dropdownItem}`}
                                 >
-                                  {attr.attribute} ({attr.data_type})
+                                  <div className="flex items-center gap-4">
+                                    <span
+                                      className={`text-lg ${
+                                        theme === "dark"
+                                          ? "text-blue-300"
+                                          : "text-blue-600"
+                                      }`}
+                                    >
+                                      {attr.attribute}
+                                    </span>
+                                    <span
+                                      className={`text-gray-500 text-xs ${
+                                        theme === "dark"
+                                          ? "text-gray-400"
+                                          : "text-gray-600"
+                                      }`}
+                                    >
+                                      {attr.data_type}
+                                    </span>
+                                  </div>
                                 </button>
                               ))}
 
@@ -823,7 +866,8 @@ const ResultButton = ({
         {/* Data Type Selection Modal */}
         {isDataTypeModalOpen && (
           <div
-            className={`fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50`}
+            className={`fixed inset-0 z-70 flex items-center justify-center`}
+            style={{ backgroundColor: "rgba(128, 128, 128, 0.5)" }}
           >
             <div
               className={`w-[90%] sm:w-[80%] md:w-[50%] lg:w-[40%] max-w-lg p-6 rounded-lg shadow-lg ${getThemeClasses.background}`}
@@ -855,7 +899,7 @@ const ResultButton = ({
                       <button
                         key={type}
                         onClick={() => addCustomAttributeWithDataType(type)}
-                        className={`p-3 rounded text-left ${
+                        className={`p-3 cursor-pointer rounded text-left ${
                           theme === "dark"
                             ? "bg-gray-800 hover:bg-gray-700"
                             : "bg-gray-100 hover:bg-gray-200"
@@ -873,7 +917,8 @@ const ResultButton = ({
 
         {libraryOpen && (
           <div
-            className={`fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50`}
+            className={`fixed inset-0 z-70 flex items-center justify-center`}
+            style={{ backgroundColor: "rgba(128, 128, 128, 0.5)" }}
           >
             <div
               className={`w-[90%] sm:w-[80%] md:w-[60%] lg:w-[50%] max-w-2xl p-6 rounded-lg shadow-lg ${getThemeClasses.background}`}
@@ -926,12 +971,12 @@ const ResultButton = ({
                                   }`}
                                   onClick={() => addLibraryAttribute(attribute)}
                                 >
-                                  <div>
+                                  <div className="flex items-center gap-2">
                                     <span className="font-medium">
                                       {attribute.name}
                                     </span>
                                     <span className="text-sm text-gray-500 ml-2">
-                                      ({attribute.data_type})
+                                      {attribute.data_type}
                                     </span>
                                   </div>
                                   <Library

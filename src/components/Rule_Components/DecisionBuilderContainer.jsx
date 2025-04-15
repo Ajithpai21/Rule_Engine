@@ -4968,7 +4968,8 @@ const DecisionBuilderContainer = ({
       {/* Attribute Selector Modal */}
       {isAttributeSelectorOpen && (
         <div
-          className={`fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50`}
+          style={{ backgroundColor: "rgba(128, 128, 128, 0.5)" }}
+          className={`fixed inset-0 z-70 flex items-center justify-center`}
         >
           <div
             className={`w-[90%] sm:w-[80%] md:w-[50%] lg:w-[40%] max-w-lg p-6 rounded-lg shadow-lg ${
@@ -4979,7 +4980,11 @@ const DecisionBuilderContainer = ({
             ref={attributeSelectorRef}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">
+              <h3
+                className={`text-lg font-semibold ${
+                  theme === "dark" ? "text-white" : "text-black"
+                }`}
+              >
                 Select Attribute Data Source
               </h3>
               <button
@@ -5028,11 +5033,11 @@ const DecisionBuilderContainer = ({
                         }
                         className={`flex justify-between items-center w-full px-4 py-2 font-semibold text-left ${
                           theme === "dark"
-                            ? "hover:bg-gray-700"
-                            : "hover:bg-gray-100"
-                        }`}
+                            ? "hover:bg-gray-700 text-white"
+                            : "hover:bg-gray-100 text-black"
+                        } `}
                       >
-                        Global Attributes
+                        <span className="font-bold">Global Attributes</span>
                         {expandedAttributeGroups["Global Attributes"] ? (
                           <ChevronUp size={16} />
                         ) : (
@@ -5063,15 +5068,27 @@ const DecisionBuilderContainer = ({
                                 }
                                 className={`w-full text-left px-4 py-2 text-sm ${
                                   theme === "dark"
-                                    ? "hover:bg-gray-700"
-                                    : "hover:bg-gray-100"
+                                    ? "hover:bg-gray-700 text-white"
+                                    : "hover:bg-gray-100 text-black"
                                 }`}
                               >
-                                <div className="font-medium flex items-center gap-5">
-                                  <span className="text-white font-bold text-lg ">
+                                <div className="font-medium cursor-pointer flex items-center gap-5">
+                                  <span
+                                    className={`${
+                                      theme === "dark"
+                                        ? "text-blue-300"
+                                        : "text-blue-600"
+                                    }  text-lg `}
+                                  >
                                     {attr.attribute}
                                   </span>
-                                  <span className="text-gray-500">
+                                  <span
+                                    className={`text-gray-500 ${
+                                      theme === "dark"
+                                        ? "text-gray-400"
+                                        : "text-gray-600"
+                                    }`}
+                                  >
                                     {attr.data_type}
                                   </span>
                                 </div>
@@ -5106,11 +5123,11 @@ const DecisionBuilderContainer = ({
                         onClick={() => toggleAttributeGroup("Input Attributes")}
                         className={`flex justify-between items-center w-full px-4 py-2 font-semibold text-left ${
                           theme === "dark"
-                            ? "hover:bg-gray-700"
-                            : "hover:bg-gray-100"
+                            ? "hover:bg-gray-700 text-white"
+                            : "hover:bg-gray-100 text-black"
                         }`}
                       >
-                        Input Attributes
+                        <span className="font-bold">Input Attributes</span>
                         {expandedAttributeGroups["Input Attributes"] ? (
                           <ChevronUp size={16} />
                         ) : (
@@ -5145,11 +5162,23 @@ const DecisionBuilderContainer = ({
                                     : "hover:bg-gray-100"
                                 }`}
                               >
-                                <div className="font-medium flex items-center gap-5">
-                                  <span className="text-white font-bold text-lg ">
+                                <div className="font-medium cursor-pointer flex items-center gap-5">
+                                  <span
+                                    className={`${
+                                      theme === "dark"
+                                        ? "text-blue-300"
+                                        : "text-blue-600"
+                                    }  text-lg `}
+                                  >
                                     {attr.attribute}
                                   </span>
-                                  <span className="text-gray-500">
+                                  <span
+                                    className={`text-gray-500 ${
+                                      theme === "dark"
+                                        ? "text-gray-400"
+                                        : "text-gray-600"
+                                    }`}
+                                  >
                                     {attr.data_type}
                                   </span>
                                 </div>
