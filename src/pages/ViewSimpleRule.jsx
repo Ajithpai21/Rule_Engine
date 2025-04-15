@@ -1382,7 +1382,7 @@ const ViewSimpleRule = ({ setOnClose }) => {
               {/* Results */}
               <div>
                 <h3 className={`text-lg font-medium ${textColor} mb-2`}>
-                  Rule Outcome
+                  Results
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Then Results Section */}
