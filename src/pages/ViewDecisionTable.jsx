@@ -7,7 +7,6 @@ import DecisionBuilderContainer from "@/components/Rule_Components/DecisionBuild
 import TriggerSchedular from "@/components/Rule_Components/TriggerSchedular";
 import getUserDetails from "@/utils/getUserDetails";
 
-
 const ViewDecisionTable = ({ setOnClose }) => {
   const userDetails = getUserDetails();
   const theme = useSelector((state) => state.theme.mode);
@@ -716,7 +715,14 @@ const ViewDecisionTable = ({ setOnClose }) => {
                 >
                   Data Sources
                 </h3>
-                {dataSources.length > 0 ? (
+                {/* Modified check: Only show list if at least one source has mappings */}
+                {dataSources &&
+                dataSources.length > 0 &&
+                dataSources.some(
+                  (source) =>
+                    source.input_data_map &&
+                    Object.keys(source.input_data_map).length > 0
+                ) ? (
                   <div
                     className="flex-1 overflow-y-auto custom-scrollbar"
                     style={{ maxHeight: "250px" }}

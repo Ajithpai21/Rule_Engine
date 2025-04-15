@@ -178,13 +178,16 @@ const ReadOnlyDataSource = ({ dataSources, theme }) => {
     ? [dataSources]
     : [];
 
-  // Improved check: Ensure there's at least one valid source object
+  // Modified check: Show the list only if there's at least one source WITH mappings
   const hasValidDataSources =
     dataSourcesArray &&
     dataSourcesArray.length > 0 &&
     dataSourcesArray.some(
       (source) =>
-        source && (source.datasource_name || source.name || source.platform)
+        source &&
+        (source.datasource_name || source.name || source.platform) && // Still check for basic source info
+        source.input_data_map && // Ensure map object exists
+        Object.keys(source.input_data_map).length > 0 // Check if map has keys
     );
 
   return (
@@ -193,7 +196,7 @@ const ReadOnlyDataSource = ({ dataSources, theme }) => {
         theme === "dark" ? "bg-gray-800" : "bg-white"
       }`}
     >
-      {hasValidDataSources ? ( // Use the improved check here
+      {hasValidDataSources ? ( // Use the modified check here
         <div
           className="flex-1 overflow-y-auto custom-scrollbar"
           style={{ height: "calc(100% - 40px)" }}
