@@ -55,7 +55,7 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen transition-colors duration-300 ${
+      className={`flex flex-col  overflow-auto [&::-webkit-scrollbar]:hidden min-h-screen transition-colors duration-300 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
@@ -65,7 +65,7 @@ const Layout = () => {
           theme === "dark" ? "border-white" : "border-black"
         }`}
       />
-      <div className="flex-1 overflow-auto [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1">
         <Outlet />
       </div>
 
