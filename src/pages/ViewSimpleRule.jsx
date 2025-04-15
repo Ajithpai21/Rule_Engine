@@ -1178,7 +1178,7 @@ const ViewSimpleRule = ({ setOnClose }) => {
         className={`relative ${backStyle} w-[90%] h-[90%] rounded-lg shadow-lg overflow-hidden flex flex-col`}
       >
         <style>{scrollbarStyles}</style>
-        <ToastContainer position="top-right" autoClose={5000} />
+        {/* <ToastContainer position="top-right" autoClose={5000} /> */}
 
         {/* Header */}
         <div className="p-4 flex justify-between items-center border-b">
