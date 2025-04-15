@@ -256,7 +256,7 @@ const TableComp = ({
                     key={index}
                     className={`px-6 py-4 text-xs font-medium uppercase tracking-wider`}
                   >
-                    {column}
+                    {column.label}
                   </th>
                 ))}
                 {actionVisbility && (
@@ -312,7 +312,7 @@ const TableComp = ({
                         key={i}
                         className={`px-6 py-4 border-r ${borderColor} max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap`}
                       >
-                        {row[col]}
+                        {row[col.value]}
                       </td>
                     ))}
                     {actionVisbility && (

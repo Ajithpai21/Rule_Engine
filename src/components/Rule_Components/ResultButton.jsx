@@ -624,7 +624,7 @@ const ResultButton = ({
             onClick={() => setIsOpen(false)}
             className={`p-2 cursor-pointer rounded-md px-4 py-2 bg-blue-500 text-white`}
           >
-            Close
+            Save & Close
           </button>
         </div>
 

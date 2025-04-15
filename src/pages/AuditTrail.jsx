@@ -119,12 +119,12 @@ const AuditTrail = () => {
   }, [theme]);
 
   const columns = [
-    "action",
-    "action_by",
-    "rule_type",
-    "status",
-    "result",
-    "insert_time",
+    { label: "Action", value: "action" },
+    { label: "Action By", value: "action_by" },
+    { label: "Rule Type", value: "rule_type" },
+    { label: "Status", value: "status" },
+    { label: "Result", value: "result" },
+    { label: "Insert Time", value: "insert_time" },
   ];
 
   return (

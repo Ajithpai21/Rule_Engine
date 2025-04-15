@@ -267,7 +267,12 @@ const Rule = () => {
     }
   };
 
-  const columns = ["name", "type", "created_at", "updated_at"];
+  const columns = [
+    { label: "Name", value: "name" },
+    { label: "Type", value: "type" },
+    { label: "Created At", value: "created_at" },
+    { label: "Updated At", value: "updated_at" },
+  ];
 
   return (
     <div

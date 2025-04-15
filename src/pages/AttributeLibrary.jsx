@@ -166,7 +166,12 @@ const AttributeLibrary = () => {
     }
   }, [theme]);
 
-  const columns = ["name", "attribute_count", "created_at", "updated_at"];
+  const columns = [
+    { label: "Name", value: "name" },
+    { label: "Attribute Count", value: "attribute_count" },
+    { label: "Created At", value: "created_at" },
+    { label: "Updated At", value: "updated_at" },
+  ];
 
   return (
     <div

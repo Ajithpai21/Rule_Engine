@@ -162,7 +162,10 @@ const ViewAttributeGroup = ({
     setTimeout(() => setIsOpen(), 300);
   };
 
-  const columns = ["name", "data_type"];
+  const columns = [
+    { label: "Name", value: "name" },
+    { label: "Data Type", value: "data_type" },
+  ];
 
   return (
     <div

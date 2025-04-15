@@ -154,12 +154,12 @@ const DataSource = () => {
   };
 
   const columns = [
-    "datasource_name",
-    "platform",
-    "name",
-    "table_name",
-    "created_at",
-    "updated_at",
+    { label: "Connector", value: "datasource_name" },
+    { label: "Platform", value: "platform" },
+    { label: "Name", value: "name" },
+    { label: "Table Name", value: "table_name" },
+    { label: "Created At", value: "created_at" },
+    { label: "Updated At", value: "updated_at" },
   ];
 
   return (
