@@ -73,23 +73,7 @@ const RequireAuth = ({ children }) => {
       // --- Cleanup timers --- END
 
       // Retrieve token from session storage for the API call
-      const tokenDataString = sessionStorage.getItem("token");
-      let accessToken = null;
-      let parsedTokenData = null;
-
-      if (tokenDataString) {
-        try {
-          parsedTokenData = JSON.parse(tokenDataString);
-          accessToken =
-            parsedTokenData?.auth_response?.AuthenticationResult?.AccessToken;
-        } catch (parseError) {
-          console.error("Error parsing token data during logout:", parseError);
-          toast.error("Failed to read session data for logout.");
-          return;
-        }
-      }
-
-      // Call the backend logout endpoint only if access token exists
+      let accessToken = sessionStorage.getItem("token");
       if (accessToken) {
         try {
           console.log("Calling signout API...");
@@ -116,10 +100,86 @@ const RequireAuth = ({ children }) => {
       }
     },
     [navigate]
-  ); // Dependency: navigate
-  // --- End Logout Handler ---
+  );
+
+  // const handleLogout = useCallback(
+  //   async (reason = "unknown") => {
+  //     console.log(`Executing logout actions due to: ${reason}`);
+
+  //     // --- Cleanup timers --- START
+  //     // Clear token expiry timer
+  //     if (tokenExpiryTimer.current) {
+  //       clearTimeout(tokenExpiryTimer.current);
+  //       tokenExpiryTimer.current = null;
+  //       console.log("Cleared token expiry timer during logout.");
+  //     }
+  //     // Clear idle timer
+  //     if (idleTimer.current) {
+  //       clearTimeout(idleTimer.current);
+  //       idleTimer.current = null;
+  //       console.log("Cleared idle timer during logout.");
+  //     }
+  //     // Remove idle activity listeners immediately to prevent race conditions
+  //     const activityEvents = [
+  //       "mousemove",
+  //       "mousedown",
+  //       "keypress",
+  //       "touchstart",
+  //       "scroll",
+  //     ];
+  //     activityEvents.forEach((event) =>
+  //       window.removeEventListener(event, resetIdleTimer)
+  //     );
+  //     // --- Cleanup timers --- END
+
+  //     // Retrieve token from session storage for the API call
+  //     const tokenDataString = sessionStorage.getItem("token");
+  //     let accessToken = null;
+  //     let parsedTokenData = null;
+
+  //     if (tokenDataString) {
+  //       try {
+  //         parsedTokenData = JSON.parse(tokenDataString);
+  //         accessToken =
+  //           parsedTokenData?.auth_response?.AuthenticationResult?.AccessToken;
+  //       } catch (parseError) {
+  //         console.error("Error parsing token data during logout:", parseError);
+  //         toast.error("Failed to read session data for logout.");
+  //         return;
+  //       }
+  //     }
+
+  //     // Call the backend logout endpoint only if access token exists
+  //     if (accessToken) {
+  //       try {
+  //         console.log("Calling signout API...");
+  //         await axios.post("https://mf-authorization.mfilterit.net/signout", {
+  //           access_token: accessToken,
+  //         });
+  //         console.log("Signout API call successful.");
+  //         // Client-side logout actions only after successful API call
+  //         console.log("Proceeding with client-side logout actions.");
+  //         sessionStorage.clear();
+  //         navigate("/");
+  //       } catch (apiError) {
+  //         console.error("Signout API call failed:", apiError);
+  //         toast.error("Logout failed. Please try again.");
+  //         return;
+  //       }
+  //     } else {
+  //       // Fallback: No access token found, perform client-side logout only
+  //       console.warn(
+  //         "No access token found, performing client-side logout only."
+  //       );
+  //       sessionStorage.clear();
+  //       navigate("/");
+  //     }
+  //   },
+  //   [navigate]
+  // );
 
   // --- Idle Timer Logic ---
+
   const resetIdleTimer = useCallback(() => {
     // console.log('Resetting idle timer'); // Debug log
     if (idleTimer.current) {
@@ -158,13 +218,12 @@ const RequireAuth = ({ children }) => {
   }, [resetIdleTimer]); // Dependency: resetIdleTimer
   // --- End Idle Timer Logic ---
 
-  // --- Token Expiry Check Logic ---
   useEffect(() => {
     console.log("Setting up token expiry check.");
     const checkAuthAndExpiry = () => {
-      const tokenDataString = sessionStorage.getItem("token");
+      const accessToken = sessionStorage.getItem("token");
 
-      if (!tokenDataString) {
+      if (!accessToken) {
         if (location.pathname !== "/") {
           console.log("No token found, navigating to login.");
           // Don't call handleLogout here, as there's nothing to log out from
@@ -174,10 +233,6 @@ const RequireAuth = ({ children }) => {
       }
 
       try {
-        const tokenData = JSON.parse(tokenDataString);
-        const accessToken =
-          tokenData?.auth_response?.AuthenticationResult?.AccessToken;
-
         if (!accessToken) {
           console.error("AccessToken not found in session storage data.");
           handleLogout("missing access token");
@@ -234,8 +289,84 @@ const RequireAuth = ({ children }) => {
         tokenExpiryTimer.current = null;
       }
     };
-  }, [navigate, location, handleLogout]); // Dependencies for token check
-  // --- End Token Expiry Check Logic ---
+  }, [navigate, location, handleLogout]);
+
+  // useEffect(() => {
+  //   console.log("Setting up token expiry check.");
+  //   const checkAuthAndExpiry = () => {
+  //     const tokenDataString = sessionStorage.getItem("token");
+
+  //     if (!tokenDataString) {
+  //       if (location.pathname !== "/") {
+  //         console.log("No token found, navigating to login.");
+  //         // Don't call handleLogout here, as there's nothing to log out from
+  //         navigate("/");
+  //       }
+  //       return;
+  //     }
+
+  //     try {
+  //       const tokenData = JSON.parse(tokenDataString);
+  //       const accessToken =
+  //         tokenData?.auth_response?.AuthenticationResult?.AccessToken;
+
+  //       if (!accessToken) {
+  //         console.error("AccessToken not found in session storage data.");
+  //         handleLogout("missing access token");
+  //         return;
+  //       }
+
+  //       const decodedToken = jwtDecode(accessToken);
+  //       const currentTime = Date.now() / 1000;
+  //       const safetyMarginSeconds = 60; // 1 minute safety margin
+
+  //       if (decodedToken.exp < currentTime + safetyMarginSeconds) {
+  //         // If expiry is within the safety margin or already past
+  //         console.log(
+  //           "Token expired or nearing expiry (within safety margin), logging out."
+  //         );
+  //         handleLogout("token expired (pre-emptive)");
+  //       } else {
+  //         // Calculate time until 1 minute before expiry
+  //         const expiresIn =
+  //           (decodedToken.exp - currentTime - safetyMarginSeconds) * 1000;
+
+  //         console.log(
+  //           `Token valid, scheduling pre-emptive expiry logout in ${
+  //             expiresIn / 1000
+  //           } seconds.`
+  //         );
+
+  //         // Clear previous expiry timer if exists
+  //         if (tokenExpiryTimer.current) {
+  //           clearTimeout(tokenExpiryTimer.current);
+  //         }
+
+  //         // Set new expiry timer
+  //         tokenExpiryTimer.current = setTimeout(() => {
+  //           console.log(
+  //             "Token nearing expiry (pre-emptive timer), logging out automatically."
+  //           );
+  //           handleLogout("scheduled token expiry (pre-emptive)");
+  //         }, expiresIn);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error parsing token data or decoding token:", error);
+  //       handleLogout("token parsing error");
+  //     }
+  //   };
+
+  //   checkAuthAndExpiry();
+
+  //   // Cleanup function for *this* effect (token expiry timer only)
+  //   return () => {
+  //     console.log("Cleaning up token expiry timer.");
+  //     if (tokenExpiryTimer.current) {
+  //       clearTimeout(tokenExpiryTimer.current);
+  //       tokenExpiryTimer.current = null;
+  //     }
+  //   };
+  // }, [navigate, location, handleLogout]); // Dependencies for token check
 
   return children;
 };

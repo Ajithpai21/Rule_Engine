@@ -59,41 +59,24 @@ const Navbar = () => {
       setIsLoggingOut(true);
 
       // Get the IdToken from sessionStorage
-      const authDataString = sessionStorage.getItem("token");
-      if (authDataString) {
-        const authData = JSON.parse(authDataString);
-        const accessToken =
-          authData?.auth_response?.AuthenticationResult?.AccessToken;
-
-        if (accessToken) {
-          console.log(accessToken);
-          const response = await axios.post(
-            "https://mf-authorization.mfilterit.net/signout",
-            {
-              access_token: accessToken,
-            }
-          );
-
-          // Only clear session and redirect if logout was successful
-          if (response.data && response.status === 200) {
-            toast.success("Logged out successfully");
-
-            // Clear session storage
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("api_key");
-            sessionStorage.removeItem("workspace");
-            sessionStorage.removeItem("workspace_id");
-
-            navigate("/");
-          } else {
-            throw new Error("Logout failed: Unexpected response");
+      const accessToken = sessionStorage.getItem("token");
+      if (accessToken) {
+        const response = await axios.post(
+          "https://mf-authorization.mfilterit.net/signout",
+          {
+            access_token: accessToken,
           }
+        );
+
+        if (response.data && response.status === 200) {
+          toast.success("Logged out successfully");
+          sessionStorage.clear();
+          navigate("/");
         } else {
-          throw new Error("Access token not found");
+          throw new Error("Logout failed: Unexpected response");
         }
       } else {
-        throw new Error("Auth data not found in session storage");
+        throw new Error("Access token not found");
       }
     } catch (error) {
       console.error("Logout error:", error);

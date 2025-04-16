@@ -51,7 +51,12 @@ const Login = () => {
 
       if (response.data && response.data.message === "Login successful") {
         // Store the entire response in sessionStorage
-        sessionStorage.setItem("token", JSON.stringify(response.data));
+        sessionStorage.setItem(
+          "token",
+          response.data.auth_response.AuthenticationResult.AccessToken
+            ? response.data.auth_response.AuthenticationResult.AccessToken
+            : ""
+        );
 
         toast.success("Login successful!");
 
