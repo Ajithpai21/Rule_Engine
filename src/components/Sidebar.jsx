@@ -53,15 +53,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   return (
     <div
       ref={menuref}
-      className={`fixed top-0 left-0 h-full w-72 shadow-lg transition-transform duration-300 ease-in-out z-50 ${
+      className={`fixed top-0 left-0 h-full w-72 shadow-lg transition-transform duration-300 ease-in-out z-50 flex flex-col text-white bg-[rgb(83,0,147)] ${
         isOpen ? "translate-x-0" : "-translate-x-full"
-      } ${
-        theme === "dark"
-          ? "bg-gray-900 text-white border-gray-600"
-          : "bg-white text-black border-r border-gray-300"
-      }`}
+      } `}
     >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-500">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white flex-shrink-0">
         <h2 className="text-lg font-semibold">Menu</h2>
         <button
           onClick={() => {
@@ -72,22 +68,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             });
             toggleSidebar();
           }}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-white/20 rounded cursor-pointer"
         >
           <X size={24} />
         </button>
       </div>
 
-      <div className="p-5 space-y-3">
+      <div className="flex-grow p-5 space-y-3 overflow-y-auto custom-scrollbar">
         <div
           onClick={() => handleNavigation("/rules")}
-          className={`cursor-pointer px-4 py-2 rounded-md font-medium transition ${hoverTheme}`}
+          className={`cursor-pointer px-4 py-2 rounded-md font-medium transition hover:bg-white/20`}
         >
           Rules
         </div>
 
         <div
-          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition ${hoverTheme}`}
+          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition hover:bg-white/20`}
           onClick={() => toggleSection("security")}
         >
           <span>Security</span>
@@ -101,13 +97,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="ml-6 space-y-2">
             <div
               onClick={() => handleNavigation("/audit-trail")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-gray-200 ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Audit Trail
             </div>
             <div
               onClick={() => handleNavigation("/authorization")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-gray-200 ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Authorization
             </div>
@@ -115,7 +111,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         )}
 
         <div
-          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition ${hoverTheme}`}
+          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition hover:bg-white/20`}
           onClick={() => toggleSection("dataAction")}
         >
           <span>Data/Action</span>
@@ -129,25 +125,25 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="ml-6 space-y-2">
             <div
               onClick={() => handleNavigation("/integrations")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Integrations
             </div>
             <div
               onClick={() => handleNavigation("/data-sources")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Data Sources
             </div>
             <div
               onClick={() => handleNavigation("/global-variables")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Global Variables
             </div>
             <div
               onClick={() => handleNavigation("/attribute-library")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Attribute Library
             </div>
@@ -155,7 +151,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         )}
 
         <div
-          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition ${hoverTheme}`}
+          className={`flex items-center justify-between cursor-pointer px-4 py-2 rounded-md font-medium transition hover:bg-white/20`}
           onClick={() => toggleSection("home")}
         >
           <span>Home</span>
@@ -169,12 +165,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="ml-6 space-y-2">
             <div
               onClick={() => handleNavigation("/workspace")}
-              className={`cursor-pointer px-4 py-2 rounded-md transition ${hoverTheme}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition hover:bg-white/10`}
             >
               Workspace
             </div>
           </div>
         )}
+      </div>
+
+      <div className="mt-auto p-4 flex-shrink-0 border-t border-white">
+        <img
+          src="https://infringementportalcontent.mfilterit.com/images/media/logos/mfilterit-white-logo.png"
+          alt="mFilterIt Logo"
+          className="w-3/4 mx-auto"
+        />
       </div>
     </div>
   );
