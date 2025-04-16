@@ -1,20 +1,55 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const theme = useSelector((state) => state.theme.mode);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingUrlToken, setIsCheckingUrlToken] = useState(true);
   const [formData, setFormData] = useState({
     username: "", // This will be email
     password: "",
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tokenFromUrl = params.get("access_token");
+
+    if (tokenFromUrl) {
+      console.log("Access token found in URL parameter.");
+      try {
+        const decoded = jwtDecode(tokenFromUrl);
+        const currentTime = Date.now() / 1000;
+        if (decoded.exp < currentTime) {
+          console.warn("Token from URL is expired.");
+          toast.error("Login link expired.");
+          navigate("/", { replace: true });
+          setIsCheckingUrlToken(false);
+        } else {
+          console.log("Token from URL is valid. Logging in...");
+          sessionStorage.setItem("token", tokenFromUrl);
+          toast.success("Logged in successfully!");
+          navigate("/rules", { replace: true });
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Error decoding token from URL:", error);
+        toast.error("Invalid login link.");
+        navigate("/", { replace: true });
+        setIsCheckingUrlToken(false);
+      }
+    } else {
+      setIsCheckingUrlToken(false);
+    }
+  }, [location, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +113,14 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingUrlToken) {
+    return (
+      <div className="min-h-screen w-full flex justify-center items-center bg-gradient-to-r from-purple-900 to-purple-600">
+        <p className="text-white text-xl">Checking login parameters...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex justify-center items-center bg-gradient-to-r from-purple-900 to-purple-600">
