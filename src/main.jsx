@@ -32,7 +32,8 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 const queryClient = new QueryClient();
-const IDLE_TIMEOUT = 5 * 60 * 1000; // 2 minutes in milliseconds
+// const IDLE_TIMEOUT =  15 * 60 * 1000; // 2 minutes in milliseconds
+const IDLE_TIMEOUT = 3 * 60 * 60 * 1000; // 2 minutes in milliseconds
 
 // Auth component to protect routes
 const RequireAuth = ({ children }) => {
