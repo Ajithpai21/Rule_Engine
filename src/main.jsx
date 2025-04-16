@@ -32,8 +32,7 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 const queryClient = new QueryClient();
-// const IDLE_TIMEOUT =  15 * 60 * 1000; // 2 minutes in milliseconds
-const IDLE_TIMEOUT = 3 * 60 * 60 * 1000; // 2 minutes in milliseconds
+const IDLE_TIMEOUT = 15 * 60 * 1000;
 
 // Auth component to protect routes
 const RequireAuth = ({ children }) => {
@@ -187,14 +186,21 @@ const RequireAuth = ({ children }) => {
 
         const decodedToken = jwtDecode(accessToken);
         const currentTime = Date.now() / 1000;
+        const safetyMarginSeconds = 60; // 1 minute safety margin
 
-        if (decodedToken.exp < currentTime) {
-          console.log("Token expired, logging out.");
-          handleLogout("token expired");
-        } else {
-          const expiresIn = (decodedToken.exp - currentTime) * 1000;
+        if (decodedToken.exp < currentTime + safetyMarginSeconds) {
+          // If expiry is within the safety margin or already past
           console.log(
-            `Token valid, scheduling expiry logout in ${
+            "Token expired or nearing expiry (within safety margin), logging out."
+          );
+          handleLogout("token expired (pre-emptive)");
+        } else {
+          // Calculate time until 1 minute before expiry
+          const expiresIn =
+            (decodedToken.exp - currentTime - safetyMarginSeconds) * 1000;
+
+          console.log(
+            `Token valid, scheduling pre-emptive expiry logout in ${
               expiresIn / 1000
             } seconds.`
           );
@@ -206,8 +212,10 @@ const RequireAuth = ({ children }) => {
 
           // Set new expiry timer
           tokenExpiryTimer.current = setTimeout(() => {
-            console.log("Token expired via timer, logging out automatically.");
-            handleLogout("scheduled token expiry");
+            console.log(
+              "Token nearing expiry (pre-emptive timer), logging out automatically."
+            );
+            handleLogout("scheduled token expiry (pre-emptive)");
           }, expiresIn);
         }
       } catch (error) {
