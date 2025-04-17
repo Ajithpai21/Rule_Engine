@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import getUserDetails from "@/utils/getUserDetails";
+import { toast } from "react-toastify";
 const user = getUserDetails();
 
 const GET_ATTRIBUTE_URL =
@@ -251,6 +252,7 @@ const ResultButton = ({
         key: "",
         value: "",
         isAttributeData: false,
+        isNew: true,
       },
     ]);
   };
@@ -265,36 +267,113 @@ const ResultButton = ({
         key: "",
         value: "",
         isAttributeData: false,
+        isNew: true,
       },
     ]);
     setIsDataTypeModalOpen(false);
   };
 
-  const updateRowWithAttributeData = (attribute, sourceType) => {
-    if (selectedRowIndexForAttribute === null) return;
-
+  const updateRow = (index, field, value) => {
     setIsTested(false);
     const newResult = [...result];
-    const targetRow = newResult[selectedRowIndexForAttribute];
+    const currentRow = newResult[index];
 
-    newResult[selectedRowIndexForAttribute] = {
-      ...targetRow,
-      data_type: attribute.data_type,
-      value: {
-        source_type: sourceType,
-        value: attribute.attribute,
-      },
-      isAttributeData: true,
-    };
+    // Determine read-only status based on flags
+    const isKeyEditable = currentRow.isNew && currentRow.type !== "library"; // Key editable only if new AND not library type
+    const isValueEditable = currentRow.isNew && !currentRow.isAttributeData; // Value editable only if new AND no attribute data
+
+    // --- Prevent updates to read-only fields --- START
+    if (field === "key" && !isKeyEditable) {
+      console.warn(`Attempted to update read-only key for row index ${index}.`);
+      return;
+    }
+    if (field === "value" && !isValueEditable) {
+      // Special case: allow internal update ONLY when linking attribute data
+      if (typeof value === "object" && value.hasOwnProperty("source_type")) {
+        // Allow this specific update to proceed (it marks the value as non-editable afterwards)
+      } else {
+        console.warn(
+          `Attempted to update read-only value for row index ${index}.`
+        );
+        return; // Prevent other direct value edits
+      }
+    }
+    if (field === "data_type" && !isValueEditable) {
+      // Also prevent data_type change if value isn't editable
+      console.warn(
+        `Attempted to update data_type for read-only row index ${index}.`
+      );
+      return;
+    }
+    // --- Prevent updates to read-only fields --- END
+
+    // Handle specific field updates
+    if (field === "data_type") {
+      newResult[index][field] = value;
+      newResult[index].value = ""; // Reset value
+    } else if (field === "value") {
+      // If value is an object, it's attribute data being set internally
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        value.hasOwnProperty("source_type")
+      ) {
+        newResult[index].value = value;
+        newResult[index].isAttributeData = true;
+        // Update data_type to match attribute if available
+        if (value.data_type) newResult[index].data_type = value.data_type;
+      } else {
+        // Otherwise, it's a direct value update (only allowed if isValueEditable)
+        const dataType = currentRow.data_type;
+        let formattedValue = value;
+        // (Formatting logic remains)
+        switch (dataType) {
+          case "Number":
+            if (value === "" || isNaN(Number(value))) {
+              formattedValue = value;
+            } else {
+              formattedValue = Number(value);
+            }
+            break;
+          case "Boolean":
+            if (typeof value === "boolean") {
+              formattedValue = value;
+            } else if (value === "true") {
+              formattedValue = true;
+            } else if (value === "false") {
+              formattedValue = false;
+            } else {
+              formattedValue = null;
+            }
+            break;
+          default:
+            formattedValue = value;
+        }
+        newResult[index][field] = formattedValue;
+      }
+    } else if (field === "key") {
+      // Update key (only allowed if isKeyEditable)
+      newResult[index][field] = value;
+    }
 
     setResult(newResult);
+  };
+
+  const updateRowWithAttributeData = (attribute, sourceType) => {
+    if (selectedRowIndexForAttribute === null) return;
+    setIsTested(false);
+    // This call will set the value object and mark isAttributeData = true in updateRow
+    updateRow(selectedRowIndexForAttribute, "value", {
+      source_type: sourceType,
+      value: attribute.attribute,
+      data_type: attribute.data_type,
+    });
     setIsAttributeSelectorOpen(false);
     setSelectedRowIndexForAttribute(null);
   };
 
   const addLibraryAttribute = (attribute) => {
     setIsTested(false);
-
     let defaultValue;
     switch (attribute.data_type) {
       case "Numeric":
@@ -310,7 +389,6 @@ const ResultButton = ({
       default:
         defaultValue = "";
     }
-
     setResult([
       ...result,
       {
@@ -319,178 +397,150 @@ const ResultButton = ({
         key: attribute.name,
         value: defaultValue,
         isAttributeData: false,
+        isNew: true,
       },
     ]);
     setLibraryOpen(false);
   };
 
-  const updateRow = (index, field, value) => {
-    setIsTested(false);
-    const newResult = [...result];
-    const currentRow = newResult[index];
-
-    if (currentRow.isAttributeData) {
-      if (field === "key") {
-        newResult[index] = { ...currentRow, key: value };
-        console.log(
-          `Updated attribute data key: ${value}, value object preserved:`,
-          currentRow.value
-        );
-      } else {
-        console.warn(
-          `Attempted to update restricted field '${field}' for attribute data row.`
-        );
-        return;
-      }
-    } else {
-      if (field === "data_type") {
-        newResult[index][field] = value;
-        newResult[index].value = "";
-      } else if (field === "value") {
-        const dataType = currentRow.data_type;
-        let formattedValue = value;
-
-        switch (dataType) {
-          case "Numeric":
-            if (value === "" || isNaN(Number(value))) {
-              formattedValue = value;
-            } else {
-              formattedValue = Number(value);
-            }
-            break;
-          case "Boolean":
-            if (value === "true") {
-              formattedValue = true;
-            } else if (value === "false") {
-              formattedValue = false;
-            } else {
-              formattedValue = null;
-            }
-            break;
-          case "Date":
-          case "DateTime":
-            formattedValue = value;
-            break;
-          default:
-            formattedValue = value;
-        }
-        newResult[index][field] = formattedValue;
-        console.log(
-          `Updated value for ${dataType}: ${formattedValue} (${typeof formattedValue})`
-        );
-      } else {
-        newResult[index][field] = value;
-      }
-    }
-
-    setResult(newResult);
-  };
-
   const deleteRow = (index) => {
-    setIsTested(false);
     const newResult = result.filter((_, i) => i !== index);
     setResult(newResult);
+    setIsTested(false);
   };
 
-  const renderDataTypeInput = (row, index) => {
-    // Use consistent wider width since we're not showing data type anymore
-    const inputWidth = "w-1/2";
+  const renderDataTypeInput = (row, index, isValueReadOnly) => {
+    const { data_type, value: currentValue, isAttributeData } = row;
 
-    if (row.isAttributeData) {
-      return (
-        <input
-          type="text"
-          value={row.value.value || ""}
-          readOnly
-          className={`${inputWidth} p-2 border rounded ${getThemeClasses.disabledInput}`}
-          title={`Source: ${row.value.source_type}`}
-        />
-      );
-    } else if (typeof row.value === "object" && row.value !== null) {
-      const displayValue =
-        row.value.value !== undefined
-          ? row.value.value
-          : JSON.stringify(row.value);
-      return (
-        <input
-          type="text"
-          value={displayValue}
-          readOnly
-          className={`${inputWidth} p-2 border rounded ${getThemeClasses.disabledInput}`}
-          title="Object value (read-only)"
-        />
-      );
-    } else {
-      const onChange = (e) => updateRow(index, "value", e.target.value);
-      switch (row.data_type) {
-        case "String":
-          return (
-            <input
-              type="text"
-              value={row.value || ""}
-              onChange={onChange}
-              placeholder="Enter string value"
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.input}`}
-            />
-          );
-        case "Numeric":
-          return (
-            <input
-              type="number"
-              value={
-                row.value === null || row.value === undefined
-                  ? ""
-                  : String(row.value)
-              }
-              onChange={onChange}
-              placeholder="Enter numeric value"
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.input}`}
-            />
-          );
-        case "Boolean":
-          return (
-            <select
-              value={
-                row.value === true ? "true" : row.value === false ? "false" : ""
-              }
-              onChange={onChange}
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.input}`}
-            >
-              <option value="">Select boolean</option>
-              <option value="true">True</option>
-              <option value="false">False</option>
-            </select>
-          );
-        case "Date":
-          return (
-            <input
-              type="date"
-              value={row.value || ""}
-              onChange={onChange}
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.input}`}
-            />
-          );
-        case "DateTime":
-          return (
-            <input
-              type="datetime-local"
-              value={row.value || ""}
-              onChange={onChange}
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.input}`}
-            />
-          );
-        default:
-          return (
-            <input
-              type="text"
-              value={row.value || ""}
-              disabled={true}
-              placeholder="Select Data Type"
-              className={`${inputWidth} p-2 border rounded ${getThemeClasses.disabledInput}`}
-            />
-          );
+    const getValueString = () => {
+      if (currentValue !== undefined && currentValue !== null) {
+        if (
+          typeof currentValue === "object" &&
+          currentValue.hasOwnProperty("value")
+        ) {
+          return String(currentValue.value); // Attribute name
+        } else {
+          return String(currentValue); // Primitive value
+        }
       }
+      return "";
+    };
+
+    // --- NEW: If attribute data is linked, always show a read-only text input with the attribute name --- START
+    if (isAttributeData) {
+      const attributeName = getValueString(); // Get the attribute name string
+      return (
+        <input
+          type="text"
+          className={`flex-grow p-2 border rounded ${getThemeClasses.disabledInput} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          value={attributeName}
+          readOnly={true}
+          title={`Linked Attribute: ${attributeName}`}
+        />
+      );
     }
+    // --- NEW: If attribute data is linked, always show a read-only text input with the attribute name --- END
+
+    // --- If NOT attribute data, proceed with type-specific editable inputs --- START
+    const commonInputProps = {
+      className: `flex-grow p-2 border rounded ${
+        isValueReadOnly ? getThemeClasses.disabledInput : getThemeClasses.input
+      } focus:outline-none focus:ring-2 focus:ring-blue-500`,
+      readOnly: isValueReadOnly,
+      // Specific value and onChange are set below
+    };
+
+    switch (data_type) {
+      case "Boolean":
+        return (
+          <select
+            {...commonInputProps}
+            value={getValueString()} // Still use primitive string value here
+            disabled={isValueReadOnly}
+            onChange={
+              isValueReadOnly
+                ? () => {}
+                : (e) => updateRow(index, "value", e.target.value === "true")
+            }
+          >
+            <option
+              value=""
+              disabled={getValueString() !== "" || isValueReadOnly}
+            >
+              Select Value
+            </option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        );
+
+      case "Number":
+      case "Numeric":
+        return (
+          <input
+            type="number"
+            placeholder={isValueReadOnly ? "" : "Enter number value"}
+            title={isValueReadOnly ? getValueString() : undefined}
+            {...commonInputProps}
+            value={getValueString()} // Use primitive string value here
+            onChange={
+              isValueReadOnly
+                ? () => {}
+                : (e) => updateRow(index, "value", e.target.value)
+            }
+          />
+        );
+
+      case "Date":
+        return (
+          <input
+            type="date"
+            placeholder={isValueReadOnly ? "" : "Select date"}
+            title={isValueReadOnly ? getValueString() : undefined}
+            {...commonInputProps}
+            value={getValueString()} // Use primitive string value here
+            onChange={
+              isValueReadOnly
+                ? () => {}
+                : (e) => updateRow(index, "value", e.target.value)
+            }
+          />
+        );
+
+      case "DateTime":
+        return (
+          <input
+            type="datetime-local"
+            placeholder={isValueReadOnly ? "" : "Select date and time"}
+            title={isValueReadOnly ? getValueString() : undefined}
+            {...commonInputProps}
+            value={getValueString()} // Use primitive string value here
+            onChange={
+              isValueReadOnly
+                ? () => {}
+                : (e) => updateRow(index, "value", e.target.value)
+            }
+          />
+        );
+
+      case "String":
+      default:
+        return (
+          <input
+            type="text"
+            placeholder={isValueReadOnly ? "" : "Enter string value"}
+            title={isValueReadOnly ? getValueString() : undefined}
+            {...commonInputProps}
+            value={getValueString()} // Use primitive string value here
+            onChange={
+              isValueReadOnly
+                ? () => {}
+                : (e) => updateRow(index, "value", e.target.value)
+            }
+          />
+        );
+    }
+    // --- If NOT attribute data, proceed with type-specific editable inputs --- END
   };
 
   const toggleAttributeGroup = (groupName) => {
@@ -506,15 +556,65 @@ const ResultButton = ({
     setIsAttributeSelectorOpen(true);
   };
 
-  // Helper function to get the selected row's data type for filtering attributes
   const getSelectedRowDataType = () => {
     if (selectedRowIndexForAttribute === null) return null;
-
     const selectedRow = result[selectedRowIndexForAttribute];
     if (!selectedRow) return null;
-
     return selectedRow.data_type || "String";
   };
+
+  // --- Validation and Save Logic --- START
+  const handleSaveAndClose = () => {
+    const seenKeys = new Set();
+    for (let i = 0; i < result.length; i++) {
+      const row = result[i];
+      const key = row.key.trim();
+      const value = row.value;
+
+      // 1. Check for empty key
+      if (key === "") {
+        toast.error(`Row ${i + 1}: Key cannot be empty.`);
+        return; // Stop saving
+      }
+
+      // 2. Check for duplicate key
+      if (seenKeys.has(key)) {
+        toast.error(`Row ${i + 1}: Duplicate key "${key}" found.`);
+        return; // Stop saving
+      }
+      seenKeys.add(key);
+
+      // 3. Check for empty value (only if not attribute data)
+      if (!row.isAttributeData) {
+        // Consider empty string, null, undefined as invalid.
+        // Allow boolean false and number 0.
+        const isValueEmpty =
+          value === "" || value === null || value === undefined;
+        if (isValueEmpty) {
+          toast.error(`Row ${i + 1}: Value cannot be empty for key "${key}".`);
+          return; // Stop saving
+        }
+      }
+      // 4. Check if value is still an object but NOT attribute data (shouldn't happen with current logic, but good check)
+      else if (
+        typeof value === "object" &&
+        value !== null &&
+        !value.hasOwnProperty("source_type")
+      ) {
+        toast.error(
+          `Row ${
+            i + 1
+          }: Invalid value format for key "${key}". Please link attribute data correctly or enter a direct value.`
+        );
+        return;
+      }
+    }
+
+    // All validations passed
+    console.log("Result validation passed. Closing modal.");
+    setIsOpen(false);
+  };
+  // --- Validation and Save Logic --- END
 
   return (
     <div
@@ -550,38 +650,64 @@ const ResultButton = ({
               <p className="text-sm">Click "Add Result" to define outcomes.</p>
             </div>
           )}
-          {result.map((row, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <input
-                placeholder="Enter key"
-                value={row.key}
-                onChange={(e) => updateRow(index, "key", e.target.value)}
-                className={`w-1/2 p-2 border rounded ${
-                  row.type === "library"
-                    ? getThemeClasses.disabledInput
-                    : getThemeClasses.input
-                }`}
-                disabled={row.type === "library"}
-              />
+          {result.map((row, index) => {
+            // Determine editable status based on flags
+            const isKeyEditable = row.isNew && row.type !== "library";
+            const isValueEditable = row.isNew && !row.isAttributeData;
+            const keyReadOnly = !isKeyEditable;
+            const valueReadOnly = !isValueEditable;
 
-              {renderDataTypeInput(row, index)}
-
-              <button
-                onClick={() => handleOpenAttributeSelector(index)}
-                className={`p-2 rounded cursor-pointer ${getThemeClasses.button.iconButton}`}
-                title="Select Attribute Data"
-              >
-                <DatabaseZap size={16} />
-              </button>
-
-              <button
-                onClick={() => deleteRow(index)}
-                className={`p-2 rounded cursor-pointer ${getThemeClasses.button.delete}`}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
+            return (
+              <div key={index} className="flex items-center space-x-2">
+                <input
+                  placeholder="Enter key"
+                  value={row.key} // Use value for controlled input
+                  readOnly={keyReadOnly}
+                  className={`w-1/2 p-2 border rounded ${
+                    keyReadOnly
+                      ? getThemeClasses.disabledInput
+                      : getThemeClasses.input
+                  }`}
+                  onChange={
+                    keyReadOnly
+                      ? () => {}
+                      : (e) => updateRow(index, "key", e.target.value)
+                  }
+                  title={keyReadOnly ? row.key : "Enter key"}
+                />
+                {renderDataTypeInput(row, index, valueReadOnly)}{" "}
+                {/* Pass value read-only flag */}
+                {/* Attribute Selector Button: Disable if not a new row OR already has attribute data */}
+                <button
+                  onClick={() => handleOpenAttributeSelector(index)}
+                  className={`p-2 rounded cursor-pointer ${
+                    getThemeClasses.button.iconButton
+                  } ${
+                    !row.isNew || row.isAttributeData
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  title={
+                    !row.isNew
+                      ? "Cannot link initial rows"
+                      : row.isAttributeData
+                      ? "Attribute already selected"
+                      : "Select Attribute Data"
+                  }
+                  disabled={!row.isNew || row.isAttributeData}
+                >
+                  <DatabaseZap size={16} />
+                </button>
+                {/* Delete Button: Allow deleting any row */}
+                <button
+                  onClick={() => deleteRow(index)}
+                  className={`p-2 rounded cursor-pointer ${getThemeClasses.button.delete}`}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         <div className="relative mt-4" ref={addBtnRef}>
@@ -621,7 +747,7 @@ const ResultButton = ({
 
         <div className="closeButton flex justify-end mt-auto pt-4">
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={handleSaveAndClose}
             className={`p-2 cursor-pointer rounded-md px-4 py-2 bg-blue-500 text-white`}
           >
             Save & Close
@@ -669,7 +795,6 @@ const ResultButton = ({
                 )}
                 {!isLoadingAttributes && !errorAttributes && (
                   <>
-                    {/* Show selected data type for filtering */}
                     {getSelectedRowDataType() && (
                       <div
                         className={`text-sm mb-2 ${
@@ -702,7 +827,6 @@ const ResultButton = ({
                               .filter((attr) => {
                                 const requiredDataType =
                                   getSelectedRowDataType();
-                                // If no specific data type required, or types match, include the attribute
                                 return (
                                   !requiredDataType ||
                                   attr.data_type === requiredDataType
@@ -745,7 +869,6 @@ const ResultButton = ({
                                 </button>
                               ))}
 
-                            {/* Show message when no attributes match the filter */}
                             {fetchedAttributes.global_attributes.length > 0 &&
                               fetchedAttributes.global_attributes.filter(
                                 (attr) => {
@@ -786,7 +909,6 @@ const ResultButton = ({
                               .filter((attr) => {
                                 const requiredDataType =
                                   getSelectedRowDataType();
-                                // If no specific data type required, or types match, include the attribute
                                 return (
                                   !requiredDataType ||
                                   attr.data_type === requiredDataType
@@ -829,7 +951,6 @@ const ResultButton = ({
                                 </button>
                               ))}
 
-                            {/* Show message when no attributes match the filter */}
                             {fetchedAttributes.input_attributes.length > 0 &&
                               fetchedAttributes.input_attributes.filter(
                                 (attr) => {
@@ -863,7 +984,6 @@ const ResultButton = ({
           </div>
         )}
 
-        {/* Data Type Selection Modal */}
         {isDataTypeModalOpen && (
           <div
             className={`fixed inset-0 z-70 flex items-center justify-center`}
